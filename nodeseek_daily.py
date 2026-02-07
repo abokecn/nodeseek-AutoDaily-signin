@@ -15,6 +15,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import random
 import time
+from datetime import datetime, timezone, timedelta
 import traceback
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
@@ -372,11 +373,15 @@ if __name__ == "__main__":
     # 发送 Telegram 汇报
     sign_status = "✅ 成功" if execution_result["sign_in"] else "❌ 失败/已签到"
     
+    # 获取北京时间 (UTC+8)
+    beijing_tz = timezone(timedelta(hours=8))
+    beijing_time = datetime.now(beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
+    
     report_message = f"""🎯 <b>NodeSeek 自动任务完成</b>
 
 📝 <b>签到状态:</b> {sign_status}
 💬 <b>评论数量:</b> {execution_result["comments"]} 条
 
-⏰ 执行时间: 北京时间 {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}"""
+⏰ 执行时间: 北京时间 {beijing_time}"""
     
     send_telegram_message(report_message)
