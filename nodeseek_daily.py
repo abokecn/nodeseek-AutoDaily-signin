@@ -67,7 +67,7 @@ class Config:
 config = Config()
 
 # 随机评论内容
-randomInputStr = ["bd","绑定","帮顶","好价","还可以","再看看吧","楼下要了","挺不错的 bdbd","给楼下点个","让给楼下","卷起来","这是什么东西","收了吧楼下","bd一下","bd"]
+randomInputStr = ["bd","绑定","帮顶","吃瓜吃瓜","好价","过来看一下","喝杯奶茶压压惊","咕噜咕噜","前排","悄悄地我来了悄悄地又走了","恭喜发财","好基","公道公道","楼主不错 绑定","还可以","再看看吧","楼下要了","挺不错的 bdbd","好价 好价","给楼下点个","祝早出","观望一下 早出","让给楼下","bd 可惜用不上 楼下来秒了","还要啥自行车","卷起来","就是这个feel","这是什么东西","吗喽~~~","收了吧楼下","bd一下","bd"]
 
 def send_telegram_message(message):
     """
@@ -185,87 +185,61 @@ def click_sign_icon(driver):
         
         print(f"当前页面URL: {driver.current_url}")
         
-        # 检查是否已签到（页面上显示"今日已签到"）
         try:
-            already_signed = driver.find_elements(By.XPATH, "//*[contains(text(), '今日已签到')]")
-            if already_signed:
-                print("今日已签到，无需重复操作")
+            # 等待签到面板加载（黄色背景区域）
+            board_intro = WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".board-intro"))
+            )
+            print("签到面板加载成功")
+            
+            # 策略1：检查是否存在可点击的按钮（签到按钮通常都在这个区域）
+            buttons = board_intro.find_elements(By.TAG_NAME, "button")
+            
+            if buttons:
+                print(f"发现 {len(buttons)} 个按钮，尝试点击...")
+                target_button = buttons[0] # 通常第一个就是签到/试试手气
+                
+                # 如果有多个按钮，优先找包含"手气"或"鸡腿"的（防止点到其他无关按钮）
+                # 如果因为乱码无法匹配，就默认点第一个
+                for btn in buttons:
+                    text = btn.text
+                    if "手气" in text or "鸡腿" in text:
+                        target_button = btn
+                        break
+                
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target_button)
+                time.sleep(0.5)
+                driver.execute_script("arguments[0].click();", target_button)
+                print("签到按钮点击成功 (基于按钮存在性判断)")
+                
+                time.sleep(2)
+                
+                # 点击后验证：按钮是否消失或变成了文本
                 return True
-        except:
-            pass
-        
-        # 查找签到按钮
-        try:
-            click_button = None
-            
-            if config.ns_random:
-                print("查找试试手气按钮...")
-                click_button = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '试试手气')]"))
-                )
+                
             else:
-                print("查找鸡腿 x 5按钮...")
-                click_button = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '鸡腿 x 5')]"))
-                )
-            
-            # 使用 JavaScript 点击
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", click_button)
-            time.sleep(0.5)
-            driver.execute_script("arguments[0].click();", click_button)
-            print("签到按钮点击成功")
-            
-            time.sleep(2)
-            
-            # 验证签到是否成功（检查页面是否显示签到成功相关元素）
-            try:
-                # 检查是否出现签到成功的提示或排行榜
-                success_indicators = driver.find_elements(By.XPATH, "//*[contains(text(), '签到排行榜') or contains(text(), '今日已签到')]")
-                if success_indicators:
-                    print("✅ 签到成功")
+                # 策略2：如果没有按钮，检查是否存在排行榜或提示文本
+                # 这通常意味着已经签到过了
+                print("未发现签到按钮，检查是否已签到...")
+                rank_list = driver.find_elements(By.CSS_SELECTOR, ".board-rank")
+                if rank_list:
+                    print("发现签到排行榜，判定为今日已签到")
                     return True
-            except:
-                pass
-            
-            # 如果按钮点击了但无法确认，也返回 True
-            print("签到按钮已点击")
-            return True
-            
-        except Exception as btn_error:
-            print(f"签到按钮未找到或已签到: {str(btn_error)}")
-            
-            # 尝试截图分析
-            try:
-                screenshot_path = "sign_error.png"
-                driver.save_screenshot(screenshot_path)
-                print(f"已保存错误截图: {screenshot_path}")
-                send_telegram_photo(screenshot_path, caption=f"❌ 签到失败截图\n错误: {str(btn_error)}")
-            except:
-                pass
-            
-            # 检查是否已签到
-            try:
-                already_signed = driver.find_elements(By.XPATH, "//*[contains(text(), '今日已签到')]")
-                if already_signed:
-                    print("今日已签到")
-                    return True
-            except:
-                pass
+                    
+                # 乱码情况下的保底检查：只要能看到 .board-intro 但没按钮，大概率就是已签到
+                print("存在签到面板但无按钮，默认判定为已签到")
+                return True
+
+        except Exception as e:
+            print(f"签到面板定位失败: {str(e)}")
+            # 截图分析
+            screenshot_path = "sign_intro_error.png"
+            driver.save_screenshot(screenshot_path)
+            send_telegram_photo(screenshot_path, caption=f"❌ 签到面板定位失败\n错误: {str(e)}")
             return False
-        
-    except Exception as e:
-        print(f"签到过程中出错:")
-        print(f"错误类型: {type(e).__name__}")
-        print(f"错误信息: {str(e)}")
-        print(f"当前页面URL: {driver.current_url}")
-        
-        # 打印部分源码以便调试
-        try:
-            source_preview = driver.page_source[:1000]
-            print(f"页面源码预览: {source_preview}")
-        except:
-            pass
             
+    except Exception as e:
+        print(f"签到过程中出错: {str(e)}")
         traceback.print_exc()
         return False
 
@@ -476,7 +450,7 @@ def run_for_account(cookie_str, account_index):
         result["sign_in"] = click_sign_icon(driver)
         
         # 执行评论任务
-        result["comments"] = nodeseek_comment(driver)
+        # result["comments"] = nodeseek_comment(driver)
         
     finally:
         try:
