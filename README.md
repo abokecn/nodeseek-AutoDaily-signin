@@ -19,9 +19,26 @@
 2. 在 `Settings → Secrets and variables → Actions` 中添加配置
 3. Actions 将每天 **北京时间 00:30** 自动执行
 
+## 🍪 如何获取 NodeSeek Cookie
+
+1. 打开浏览器，访问 [NodeSeek](https://www.nodeseek.com) 并登录
+2. 按 `F12` 打开开发者工具，切换到 **Network（网络）** 标签
+3. 刷新页面，在请求列表中点击任意一个请求
+4. 在右侧 **Headers（标头）** 中找到 `Cookie` 字段
+5. 复制整个 Cookie 值（一长串文本）
+
+**示例：**
+```
+session=abc123xyz; token=def456uvw; user_id=12345
+```
+
+> ⚠️ Cookie 包含登录凭证，请勿泄露！
+
 ## ⚙️ 配置说明
 
 ### Secrets（敏感信息）
+
+在 `Settings → Secrets and variables → Actions → Secrets` 中添加：
 
 | 变量名 | 必填 | 说明 |
 |--------|------|------|
@@ -33,6 +50,8 @@
 
 ### Variables（非敏感配置）
 
+在 `Settings → Secrets and variables → Actions → Variables` 中添加：
+
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
 | `NS_DELAY_MIN` | `0` | 随机延迟最小分钟 |
@@ -41,10 +60,13 @@
 ## 📝 多账号配置示例
 
 ```
-cookie1=value1; cookie2=value2|cookie1=value3; cookie2=value4
+账号1的完整Cookie|账号2的完整Cookie
 ```
 
-用 `|` 分隔不同账号的 Cookie。
+示例：
+```
+session=abc123; token=xyz|session=def456; token=uvw
+```
 
 ## 📱 通知示例
 
@@ -67,6 +89,14 @@ cookie1=value1; cookie2=value2|cookie1=value3; cookie2=value4
 
 ⏰ 执行时间: 北京时间 2026-02-08 00:30:00
 ```
+
+## ❓ 常见问题
+
+**Q: Cookie 多久过期？**  
+A: 一般 7-30 天，过期后会收到 Telegram 告警通知。
+
+**Q: 如何手动运行测试？**  
+A: 进入 Actions 页面，选择 workflow，点击 "Run workflow"。
 
 ## License
 
