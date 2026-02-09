@@ -232,8 +232,12 @@ def click_sign_icon(driver):
                 print("✅ 检测到已签到关键词")
                 # 尝试解析获得的鸡腿数
                 import re
-                match = re.search(r"获得\s*(\d+)\s*鸡腿", intro_text)
-                count = match.group(1) if match else "未知"
+                # 匹配 "获得 x 鸡腿" 或 "获得鸡腿 x 个"
+                match = re.search(r"获得\s*(\d+)\s*鸡腿|鸡腿\s*(\d+)\s*个", intro_text)
+                if match:
+                    count = match.group(1) if match.group(1) else match.group(2)
+                else:
+                    count = "未知"
                 return "already", count
             
             # 检查是否有按钮
@@ -275,8 +279,11 @@ def click_sign_icon(driver):
                         EC.presence_of_element_located((By.CSS_SELECTOR, ".board-intro"))
                     ).text
                     import re
-                    match = re.search(r"获得\s*(\d+)\s*鸡腿", new_intro)
-                    count = match.group(1) if match else "未知"
+                    match = re.search(r"获得\s*(\d+)\s*鸡腿|鸡腿\s*(\d+)\s*个", new_intro)
+                    if match:
+                        count = match.group(1) if match.group(1) else match.group(2)
+                    else:
+                        count = "未知"
                     return "success", count
                 except:
                     return "success", "未知"
@@ -333,8 +340,11 @@ def click_sign_icon(driver):
                 if success_msg:
                     print(f"✅ 通过文本发现已签到信息: {success_msg[0].text}")
                     import re
-                    match = re.search(r"获得\s*(\d+)\s*鸡腿", success_msg[0].text)
-                    count = match.group(1) if match else "未知"
+                    match = re.search(r"获得\s*(\d+)\s*鸡腿|鸡腿\s*(\d+)\s*个", success_msg[0].text)
+                    if match:
+                        count = match.group(1) if match.group(1) else match.group(2)
+                    else:
+                        count = "未知"
                     return "already", count
             except:
                 pass
@@ -345,8 +355,11 @@ def click_sign_icon(driver):
             if "今日已签到" in page_text or "签到成功" in page_text or "本次获得" in page_text:
                 print("✅ 全局文本检测到 '已签到' 相关字样")
                 import re
-                match = re.search(r"获得\s*(\d+)\s*鸡腿", page_text)
-                count = match.group(1) if match else "未知"
+                match = re.search(r"获得\s*(\d+)\s*鸡腿|鸡腿\s*(\d+)\s*个", page_text)
+                if match:
+                    count = match.group(1) if match.group(1) else match.group(2)
+                else:
+                    count = "未知"
                 return "already", count
                 
             if "登录" in page_text and "注册" in page_text and "个人中心" not in page_text:
