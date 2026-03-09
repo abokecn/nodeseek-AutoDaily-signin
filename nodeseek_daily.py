@@ -7,9 +7,7 @@ See LICENSE file in the project root for full license information.
 import os
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,7 +18,6 @@ from datetime import datetime, timezone, timedelta
 import traceback
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Config:
@@ -431,40 +428,31 @@ def setup_driver_and_cookies(cookie_str):
             return None
             
         print("开始初始化浏览器...")
-        options = Options()
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-software-rasterizer')
-        options.add_argument('--disable-infobars')
-        options.add_argument('--lang=zh-CN,zh')
-        options.add_argument('--disable-extensions')
+        chrome_options = uc.ChromeOptions()
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-software-rasterizer')
+        chrome_options.add_argument('--disable-infobars')
+        chrome_options.add_argument('--lang=zh-CN,zh')
+        chrome_options.add_argument('--window-size=1920,1080')
         
-        if config.headless:
+        # 判断是否使用 headless 模式
+        use_headless = config.headless
+        if use_headless:
             print("启用无头模式...")
-            options.add_argument('--headless=new')
-            options.add_argument('--window-size=1920,1080')
-            # 更新为最新 User-Agent (Chrome 131)
-            options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36')
+        else:
+            print("使用 xvfb 虚拟显示器模式 (非 headless)，可绕过 Cloudflare 检测")
         
-        # 禁用自动化控制标记
-        options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_experimental_option('excludeSwitches', ['enable-automation'])
-        options.add_experimental_option('useAutomationExtension', False)
+        print("正在启动Chrome (undetected-chromedriver)...")
+        # UC 自动处理 ChromeDriver 下载、反检测补丁、webdriver 标记移除
+        driver = uc.Chrome(
+            options=chrome_options,
+            headless=use_headless,
+            use_subprocess=True
+        )
         
-        print("正在启动Chrome...")
-        # 使用 webdriver-manager 自动管理 ChromeDriver 版本
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
-        
-        # 修改 webdriver 标记
-        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
-            'source': "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-        })
-        
-        if config.headless:
-            driver.set_window_size(1920, 1080)
-        
+        driver.set_window_size(1920, 1080)
         print("Chrome启动成功")
         
         print("正在设置cookie...")
