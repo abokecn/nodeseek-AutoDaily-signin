@@ -48,14 +48,13 @@ jobs:
 
       - name: Run NodeSeek script
         env:
-          NS_COOKIE: ${{ secrets.NS_COOKIE }}
-          NS_RANDOM: ${{ secrets.NS_RANDOM }}
-          NS_COMMENT: ${{ secrets.NS_COMMENT }}
-          NS_COMMENT_URL: ${{ vars.NS_COMMENT_URL }}
-          NS_DELAY_MIN: ${{ vars.NS_DELAY_MIN }}
-          NS_DELAY_MAX: ${{ vars.NS_DELAY_MAX }}
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          NS_COOKIE: ${{ secrets.NS_COOKIE }} 
+          NS_RANDOM: ${{ secrets.NS_RANDOM }} 
+          NS_COMMENT_URL: ${{ secrets.NS_COMMENT_URL }} 
+          NS_DELAY_MIN: ${{ vars.NS_DELAY_MIN }} 
+          NS_DELAY_MAX: ${{ vars.NS_DELAY_MAX }} 
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} 
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} 
           HEADLESS: "false"
         run: |
           xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python nodeseek_daily.py
