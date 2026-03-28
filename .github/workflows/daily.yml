@@ -50,7 +50,8 @@ jobs:
         env:
           NS_COOKIE: ${{ secrets.NS_COOKIE }}
           NS_RANDOM: ${{ secrets.NS_RANDOM }}
-          NS_COMMENT_URL: ${{ secrets.NS_COMMENT_URL }}
+          NS_COMMENT: ${{ secrets.NS_COMMENT }}
+          NS_COMMENT_URL: ${{ vars.NS_COMMENT_URL }}
           NS_DELAY_MIN: ${{ vars.NS_DELAY_MIN }}
           NS_DELAY_MAX: ${{ vars.NS_DELAY_MAX }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
