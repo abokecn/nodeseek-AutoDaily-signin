@@ -11,6 +11,7 @@ on:
 jobs:
   run-nodeseek-daily:
     runs-on: ubuntu-22.04
+    environment: NS
 
     steps:
       - name: Checkout repository
